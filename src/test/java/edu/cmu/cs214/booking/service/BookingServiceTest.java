@@ -93,4 +93,37 @@ class BookingServiceTest {
 
         assertEquals(1, svc.listBookings(roomA).size());
     }
+
+    // S3: 取消后，最早等待且不冲突的候补者被晋升为确认预订
+    @Test
+    void cancelBookingPromotesEarliestFittingWaiter() {
+        BookingService svc = newService();
+        BookingResult r = svc.book(roomA, alice, new TimeInterval(600, 660));
+        String bookingId = ((BookingResult.Confirmed) r).booking().id();
+        svc.book(roomA, bob, new TimeInterval(630, 700)); // 与 Alice 冲突，进候补
+
+        svc.cancelBooking(bookingId);
+
+        assertEquals(1, svc.listBookings(roomA).size());
+        assertEquals(bob, svc.listBookings(roomA).get(0).user());
+    }
+
+    // S5: 最早的候补者仍与其他预订冲突时被跳过，晋升下一个可行者
+    @Test
+    void cancelBookingSkipsConflictingWaiter() {
+        BookingService svc = newService();
+        User carol = new User("u3", "Carol");
+        User dave = new User("u4", "Dave");
+        BookingResult r = svc.book(roomA, alice, new TimeInterval(600, 660));
+        String bookingId = ((BookingResult.Confirmed) r).booking().id();
+        svc.book(roomA, bob, new TimeInterval(650, 760));  // w1，与 Alice 冲突
+        svc.book(roomA, carol, new TimeInterval(700, 760)); // 确认
+        svc.book(roomA, dave, new TimeInterval(620, 680)); // w2，与 Alice 冲突
+
+        svc.cancelBooking(bookingId);
+
+        // w1 (Bob, 650-760) 仍与 Carol 冲突，被跳过；w2 (Dave) 被晋升
+        assertEquals(2, svc.listBookings(roomA).size());
+        assertEquals(dave, svc.listBookings(roomA).get(1).user());
+    }
 }
