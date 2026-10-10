@@ -52,7 +52,7 @@ public class BookingService {
      */
     public boolean isAvailable(Room room, TimeInterval interval) {
         for (Booking b : store.bookingsForRoom(room)) {
-            if (b.interval().start() >= interval.start() && b.interval().start() < interval.end()) {
+            if (b.interval().overlaps(interval)) {  // 复用领域层唯一的冲突规则
                 return false;
             }
         }
