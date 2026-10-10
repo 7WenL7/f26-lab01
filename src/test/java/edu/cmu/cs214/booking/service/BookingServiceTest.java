@@ -70,4 +70,27 @@ class BookingServiceTest {
         assertEquals(1, store.bookingsForRoom(roomA).size());
         assertEquals(1, store.bookingsForRoom(roomB).size());
     }
+
+    // S1: 取消已确认的预订会释放该时段
+    @Test
+    void cancelBookingRemovesConfirmedBooking() {
+        BookingService svc = newService();
+        BookingResult r = svc.book(roomA, alice, new TimeInterval(600, 660));
+        String bookingId = ((BookingResult.Confirmed) r).booking().id();
+
+        svc.cancelBooking(bookingId);
+
+        assertEquals(0, svc.listBookings(roomA).size());
+    }
+
+    // S2: 取消不存在的预订 id 时什么都不做
+    @Test
+    void cancelBookingWithUnknownIdDoesNothing() {
+        BookingService svc = newService();
+        svc.book(roomA, alice, new TimeInterval(600, 660));
+
+        svc.cancelBooking("no-such-id");
+
+        assertEquals(1, svc.listBookings(roomA).size());
+    }
 }

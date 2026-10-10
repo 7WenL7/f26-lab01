@@ -46,4 +46,16 @@ public class BookingService {
     public List<Booking> listBookings(Room room) {
         return store.bookingsForRoom(room);
     }
+
+    /**
+     * Cancels the confirmed booking with {@code bookingId}, freeing its slot. If
+     * no booking has that id, does nothing. Waitlist promotion is not yet
+     * implemented.
+     */
+    public void cancelBooking(String bookingId) {
+        if (store.findBooking(bookingId).isEmpty()) {
+            return;
+        }
+        store.removeBooking(bookingId);
+    }
 }
