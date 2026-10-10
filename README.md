@@ -27,4 +27,4 @@ By the way: the fix may not be where the failing test first points you. :-)
 See the Lab 1 handout on the course page for the three milestones you show a TA.
 ## 工具与模型声明
 - 工具：Claude Code（IDEA 终端）
-- 模型：<填写你实际使用的模型名称>
+- 模型：<kimi-k3>
